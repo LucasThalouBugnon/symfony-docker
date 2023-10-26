@@ -11,7 +11,8 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Annotation\Route; 
+use App\Entity\Task;
 
 #[Route('/article')]
 class ArticleController extends AbstractController
@@ -37,11 +38,12 @@ class ArticleController extends AbstractController
 
         $form = $this->createFormBuilder($task)
         ->add('titre', TextType::class)
+        ->add('texte', TextType::class)
         ->getForm();
 
         $article = new Article();
         $article->setTitre($form->get('titre')->getData())
-        ->setTexte("ouiouiouiouiouiouiouiouiouioui")
+        ->setTexte($form->get('texte')->getData())
         ->setEtat(true)
         ->setDate(new DateTimeImmutable());
         // dd($article); Pour débug 
@@ -70,7 +72,20 @@ class ArticleController extends AbstractController
     #[Route('/modifier/{id}', name: "app_article_modif")]
     public function modifArticle(ArticleRepository $articleRepository, int $id): Response
     {
-        
+        $product = $articleRepository->getRepository(Article::class)->find($id);
+
+        if (!$product) {
+            throw $this->createNotFoundException(
+                'No product found for id '.$id
+            );
+        }
+
+        $product->setName('New product name!');
+        $articleRepository->flush();
+
+        return $this->redirectToRoute('product_show', [
+            'id' => $product->getId()
+        ]);
     }
 
     #[Route('supprimer/{id}', name: 'app_article_supprimer')]

@@ -5,25 +5,48 @@ namespace App\Entity;
 use App\Repository\ArticleRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
+
+
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
+#[ApiResource(
+    operations: [
+        new Get(normalizationContext: ['groups' => 'article:item']),
+        new GetCollection(normalizationContext: ['groups' => 'article:list'])
+    ],
+    order: ['createdAt' => 'DESC'],
+    paginationEnabled: false,
+)]
+#[ApiFilter(SearchFilter::class, properties: ['conference' => 'exact'])]
 class Article
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['article::list', 'article::item'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['article::list', 'article::item'])]
     private ?string $titre = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['article::list', 'article::item'])]
     private ?string $texte = null;
 
     #[ORM\Column]
+    #[Groups(['article::list', 'article::item'])]
     private ?bool $etat = null;
 
     #[ORM\Column]
+    #[Groups(['article::list', 'article::item'])]
+    
     private ?\DateTimeImmutable $date = null;
 
     public function getId(): ?int
