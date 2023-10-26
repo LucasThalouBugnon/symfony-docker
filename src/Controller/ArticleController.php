@@ -33,7 +33,7 @@ class ArticleController extends AbstractController
     public function creeArticle(EntityManagerInterface $entityManager): Response
     {   
         $task = new Task();
-        $task->setTask('Write a blog post');
+        $task->setTask('Enregistrer article');
         $task->setDueDate(new DateTimeImmutable());
 
         $form = $this->createFormBuilder($task)
