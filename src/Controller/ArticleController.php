@@ -2,7 +2,10 @@
 
 namespace App\Controller;
 
-use Symfony\Component\Security\Http\Attribute\isGranted;
+use App\Repository\ArticleRepository;
+use Doctrine\DBAL\Types\TextType;
+use Symfony\Component\HttpFoundation\Test\Constraint\ResponseCookieValueSame;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Entity\Article;
 use DateTimeImmutable; 
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,12 +27,20 @@ class ArticleController extends AbstractController
     
     #[Route('/cree', name: "app_article_cree")]
     
-    #[isGranted('ROLE_ADMIN')]
+    #[IsGranted('ROLE_ADMIN')]
     
     public function creeArticle(EntityManagerInterface $entityManager): Response
     {   
+        $task = new Task();
+        $task->setTask('Write a blog post');
+        $task->setDueDate(new DateTimeImmutable());
+
+        $form = $this->createFormBuilder($task)
+        ->add('titre', TextType::class)
+        ->getForm();
+
         $article = new Article();
-        $article->setTitre("Mon super premier article")
+        $article->setTitre($form->get('titre')->getData())
         ->setTexte("ouiouiouiouiouiouiouiouiouioui")
         ->setEtat(true)
         ->setDate(new DateTimeImmutable());
@@ -52,8 +63,28 @@ class ArticleController extends AbstractController
         if (!$article) {
             throw $this->createNotFoundException('Aucun article avec cette id '. $id. ' ¯\_(ツ)_/¯');
         }
-        
 
-        return new Response($article->getTitre());
+        return new Response("article trouvé:". $article->getTitre());
+    }
+
+    #[Route('/modifier/{id}', name: "app_article_modif")]
+    public function modifArticle(ArticleRepository $articleRepository, int $id): Response
+    {
+        
+    }
+
+    #[Route('supprimer/{id}', name: 'app_article_supprimer')]
+    public function supprimerArticle(ArticleRepository $articleRepository, int $id): Response
+    {
+        $article = $articleRepository->find($id);
+
+        if ($article) {
+            throw $this->createNotFoundException("L'article ". $id ." n'a pas été trouvé, et ne peut donc pas être supprimé, rip");
+        }
+        
+        $articleRepository->remove($article);
+        $articleRepository->flush();
+
+        return new Response("Article supprimé."); 
     }
 }
