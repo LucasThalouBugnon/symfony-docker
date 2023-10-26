@@ -83,9 +83,7 @@ class ArticleController extends AbstractController
         $product->setName('New product name!');
         $articleRepository->flush();
 
-        return $this->redirectToRoute('product_show', [
-            'id' => $product->getId()
-        ]);
+        return new Response("Article modifié");
     }
 
     #[Route('supprimer/{id}', name: 'app_article_supprimer')]
